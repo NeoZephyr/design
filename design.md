@@ -200,7 +200,9 @@ Service 类负责与 Repository 交流，调用 Respository 类的方法，获�
 
 Service 类负责跨领域模型的业务聚合功能
 
-Service 类负责一些非功能性及与三方系统交互的工作。比如幂等、事务、发邮件、发消 息、记录日志、调用其他系统的 RPC 接口等
+Service 类负责一些非功能性及与三方系统交互的工作。比如幂等、事务、发邮件、发消息、记录日志、调用其他系统的 RPC 接口等
+
+Controller 层主要负责接口的暴露，Repository 层主要负责与数据库打交互
 
 ```java
 public class VirtualWallet {
