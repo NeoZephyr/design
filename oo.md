@@ -1,3 +1,132 @@
+## 面向对象特性
+提高代码可扩展性和复用性
+
+### 封装
+对类中的属性进行限制，提升可读性、易用性
+
+### 抽象
+忽略非关键性的实现细节
+
+### 继承
+1. 表示 is-a 关系
+2. 代码复用（继承层次过深导致可读性、可维护性变差)
+3. 支持多态特性
+
+### 多态
+1. 继承加方法重写
+2. duck-typing
+
+
+## 面向对象 vs 面向过程
+### 面向对象语言写出面向过程代码
+1. 滥用 getter、setter 方法
+违反了面向对象的封装特性
+getter 返回可修改对象
+
+2. 滥用全局变量和全局方法
+将 Constants 类拆解为功能更加单一的多个类
+细化 Utils 类
+
+3. 定义数据和方法分离的类
+
+
+## 抽象类 vs 接口
+### 抽象类
+抽象类特点
+1. 解决代码复用
+2. 强制要求子类重写抽象方法
+
+```java
+public class AbstractBird {
+    public void fly() {}
+}
+
+public class Ostrich extends AbstractBird {
+    public void fly() {
+        throw new UnSupportedMethodException("Can't fly");
+    }
+}
+```
+1. 徒增了编码的工作量
+2. 违背了最小知识原则，暴露不该暴露的接口给外部
+
+```java
+public class AbstractBird {
+}
+
+public class AbstractFlyableBird extends AbstractBird {
+    public void fly() {}
+}
+
+public class AbstractUnFlyableBird extends AbstractBird {
+}
+
+public class AbstractFlyableTweetableBird extends AbstractFlyableBird {
+}
+
+public class Ostrich extends AbstractUnFlyableBird {
+}
+```
+1. 类的继承层次越来越深、继承关系会越来越复杂，导致代码的可读性变差
+2. 破坏了类的封装特性，将父类的实现细节暴露给了子类。子类的实现依赖父类的实现，两者高度耦合，一旦父类代码修改，就会影响所有子类的逻辑
+
+抽象类来模拟接口
+```java
+public class MockInterface {
+    // 避免被实例化
+    protected MockInterface() {}
+    public void funcA() {
+        throw new MethodUnSupportedException();
+    }
+}
+```
+
+### 接口
+接口特点
+1. 解耦
+2. 可扩展
+
+基于接口而非实现编程
+1. 函数的命名不能暴露任何实现细节
+2. 封装具体的实现细节
+3. 为实现类定义抽象的接口，实现类依赖统一的接口定义，遵从一致的上传功能协议。使用者依赖接口，而不是具体的实现类来编程
+
+通过组合、接口、委托三个技术手段替换掉继承
+```java
+public interface Flyable {
+    void fly();
+}
+
+public interface Tweetable {
+    void tweet();
+}
+
+public interface EggLayable {
+    void layEgg();
+}
+
+public class FlyAbility implements Flyable {
+    public void fly() {}
+}
+
+public class Ostrich implements Tweetable, EggLayable {
+    public void tweet() {}
+    public void layEgg() {}
+}
+
+public class Sparrow impelents Flayable, Tweetable, EggLayable {
+    private FlyAbility flyAbility;
+
+    public void fly() {
+        FlyAbility.fly();
+    }
+
+    public void layEgg() {}
+    public void tweet() {}
+}
+```
+
+
 ## 鉴权功能
 
 ### ooa
