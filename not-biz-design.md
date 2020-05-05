@@ -30,6 +30,7 @@ public class RequestHeadersInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         // ...
+        template.header("timestamp", "...");
     }
 }
 
@@ -46,6 +47,84 @@ public class ResponseErrorDecoder implements ErrorDecoder {
 4. 容错性：不能因为框架本身的异常导致接口请求出错，对外暴露的接口抛出的所有运行时、非运行时异常都进行捕获处理
 
 5. 通用性：是否还可以处理其他事件的统计信息，比如 SQL 请求时间的统计信息、业务统计信息
+
+
+## 最小原型设计
+```java
+public class Metrics {
+    private Map<String, List<Double>> responseTimes = new HashMap<>();
+    private Map<String, List<Double>> timestamps = new HashMap<>();
+    private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+
+    public void recordResponseTime(String apiName, double responseTime) {
+        responseTimes.putIfAbsent(apiName, new ArrayList<>());
+        responseTimes.get(apiName).add(responseTime);
+    }
+
+    public void recordTimestamp(String apiName, double timestamp) {
+        timestamps.putIfAbsent(apiName, new ArrayList<>());
+        timestamps.get(apiName).add(timestamp);
+    }
+
+    public void startRepeatedReport(long period, TimeUnit unit) {
+        executor.scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                Gson gson = new Gson();
+                Map<String, Map<String, Double>> stats = new HashMap<>();
+
+                for (Map.Entry<String, List<Double>> entry : responseTimes.entrySet()) {
+                    String apiName = entry.getKey();
+                    List<Double> apiRespTimes = entry.getValue();
+                    stats.putIfAbsent(apiName, new HashMap<>());
+                    stats.get(apiName).put("max", max(apiRespTimes));
+                    stats.get(apiName).put("avg", avg(apiRespTimes));
+                }
+
+                for (Map.Entry<String, List<Double>> entry : timestamps.entrySet()) {
+                    String apiName = entry.getKey();
+                    List<Double> apiTimestamps = entry.getValue();
+                    stats.putIfAbsent(apiName, new HashMap<>());
+                    stats.get(apiName).put("count", (double)apiTimestamps.size());
+                }
+
+                System.out.println(gson.toJson(stats));
+            }
+        }, 0, period, unit);
+    }
+
+    private double max(List<Double> dataset) {
+        // TODO
+    }
+    private double avg(List<Double> dataset) {
+        // TODO
+    }
+}
+```
+```java
+public class UserController {
+    private Metrics metrics = new Metrics();
+
+    public UserController() {
+        metrics.startRepeatedReport(60, TimeUnit.SECONDS);
+    }
+
+    public void register(UserVo user) {
+        long startTimestamp = System.currentTimeMillis();
+        metrics.recordTimestamp("regsiter", startTimestamp);
+        // TODO
+        long respTime = System.currentTimeMillis() - startTimestamp;
+        metrics.recordResponseTime("register", respTime);
+    }
+
+    public UserVo login(String telephone, String password) {
+        long startTimestamp = System.currentTimeMillis();
+        metrics.recordTimestamp("login", startTimestamp);
+        // TODO
+        long respTime = System.currentTimeMillis() - startTimestamp;
+        metrics.recordResponseTime("login", respTime);
+    }
+}
+```
 
 
 ## v1.0 实现
