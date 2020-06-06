@@ -1,3 +1,6 @@
+行为型：解决类或对象之间的交互问题
+
+
 链表方式
 ```java
 public abstract class Handler {

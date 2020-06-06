@@ -1,3 +1,6 @@
+结构型：类或对象组合的经典结构，解决特定应用场景的问题
+
+
 ```java
 public enum NotificationEmergencyLevel {
     SEVERE, URGENCY, NORMAL, TRIVIAL

@@ -1,3 +1,6 @@
+行为型：解决类或对象之间的交互问题
+
+
 ```java
 public interface RegObserver {
     void handleRegSuccess(long userId);
