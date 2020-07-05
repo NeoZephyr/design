@@ -208,3 +208,62 @@ public class SnapshotArrayIterator<E> implements Iterator<E> {
 1. 不支持快速的随机访问。可以在 ArrayList 中存储两个数组。一个支持标记删除的，用来实现快照遍历功能；一个不支持标记删除的用来支持随机访问
 2. 删除元素不会从数组中真正移除，导致不必要的内存占用。删除数组元素时，可以将被删除数组元素的引用指向一个 object 常量；在合适的时候清理带删除标记的元素；利用强引用与弱引用
 
+
+利用迭代器模式实现一个属性解析器
+```java
+// person[0].birthdate.year
+public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+    private String name; // person
+    private final String indexedName; // person[0]
+    private String index; // 0
+    private final String children; // birthday.year
+
+    public PropertyTokenizer(String fullname) {
+        int delim = fullname.indexOf('.');
+
+        if (delim > -1) {
+            name = fullname.substring(0, delim);
+            children = fullname.substring(delim + 1);
+        } else {
+            name = fullname;
+            children = null;
+        }
+
+        indexedName = name;
+        delim = name.indexOf('[');
+
+        if (delim > -1) {
+            index = name.substring(delim + 1, name.length() - 1);
+            name = name.substring(0, delim);
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getIndex() {
+        return index;
+    }
+
+    public String getIndexedName() {
+        return indexedName;
+    }
+
+    public String getChildren() {
+        return children;
+    }
+
+    public boolean hasNext() {
+        return children != null;
+    }
+
+    public PropertyTokenizer next() {
+        return new PropertyTokenizer(children);
+    }
+
+    public void remove() {
+        throw new UnsupportedOperationException("Remove is not supported");
+    }
+}
+```
